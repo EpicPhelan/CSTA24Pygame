@@ -26,7 +26,9 @@ class player(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
         self.image = pygame.Surface((50, 50))
-        self.image.fill(YELLOW)
+        self.image = pygame.image.load('./DudeyJump/smalldude.png').convert_alpha()
+        self.right = self.image
+        self.left = pygame.transform.flip(self.image, True, False)
         self.rect = self.image.get_rect()
         self.rect.center = (300, 300)
         self.xvel = 0
@@ -74,6 +76,10 @@ class player(pygame.sprite.Sprite):
         if floorcol:
             self.yvel = -20
         
+        if self.xvel > 0:
+            self.image = self.right
+        else:
+            self.image = self.left
         # draw the player
         screen.blit(self.image, self.rect)
         
@@ -178,7 +184,7 @@ while running:
         
     
     # Fill the background to cover up the old drawings
-    screen.fill(WHITE)
+    screen.fill((100, 100, 255))
     # Update the shapes and sprites
     # Draw the shapes and sprites
     player.update()
