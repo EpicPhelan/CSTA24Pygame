@@ -20,6 +20,7 @@ BLUE = (0, 0, 255)
 DARKGREY = (100, 100, 100)
 YELLOW = (255, 255, 0)
 
+font = pygame.font.Font(None, 36)
 
     
 class player(pygame.sprite.Sprite):
@@ -34,6 +35,7 @@ class player(pygame.sprite.Sprite):
         self.xvel = 0
         self.yvel = 0
         self.alive = True
+        self.score = 0
         
     def update(self):
         # Gravity
@@ -56,9 +58,10 @@ class player(pygame.sprite.Sprite):
             self.rect.y = 600
             
         # if player gets close to top, force everything else down with upspeed
-        if self.rect.y < 300:
+        # make him move by the inverse of his yvel so he holds still
+        if self.rect.y < 200:
             self.upspeed = self.yvel
-            self.rect.y += self.yvel 
+            self.rect.y += self.yvel * -1
         else:
             self.upspeed = 0
 
@@ -71,6 +74,7 @@ class player(pygame.sprite.Sprite):
                         Platform()
                         if self.yvel > -15:
                             self.yvel = -15
+                            self.score += 1
     
         floorcol = pygame.sprite.spritecollide(self, Floor.floor, False)
         if floorcol:
@@ -87,7 +91,7 @@ class Platform(pygame.sprite.Sprite):
     plats = pygame.sprite.Group()
     def __init__(self, stationary = False):
         super().__init__()
-        self.image = pygame.Surface((200, 25))
+        self.image = pygame.Surface((100, 25))
         self.image.fill(BLUE)
         self.rect = self.image.get_rect()
         self.rect.x = random.choice([25, 125, 225, 325, 425])
@@ -150,20 +154,22 @@ class Floor(pygame.sprite.Sprite):
 player = player()
 floor = Floor()
 
+def start_plats():
 # Create the start platforms
-firstplat = Platform()
-firstplat.rect.y = 200
+    firstplat = Platform()
+    firstplat.rect.y = 200
 
-secondplat = Platform()
-secondplat.rect.y = 0
-secondplat.rect.x = 250
+    secondplat = Platform()
+    secondplat.rect.y = 0
+    secondplat.rect.x = 250
 
-thirdplat = Platform()
-thirdplat.rect.y = -200
-thirdplat.rect.x = 200
+    thirdplat = Platform()
+    thirdplat.rect.y = -200
+    thirdplat.rect.x = 200
 # Game Loop
 running = True
 start = pygame.time.get_ticks()
+start_plats()
 while running:
     # Event Loop
     for event in pygame.event.get():
@@ -174,6 +180,13 @@ while running:
                 player.xvel = -8
             if event.key == pygame.K_RIGHT:
                 player.xvel = 8
+            if event.key == pygame.K_SPACE and player.alive == False:
+                player.alive = True
+                player.score = 0
+                player.xvel = 0
+                player.yvel = -15
+                player.rect.center = (200, 300)
+                start_plats()
     
     # Spawns platforms every 30 ticks
     if pygame.time.get_ticks() % 30 == 0:
@@ -192,6 +205,16 @@ while running:
     
     for plat in Platform.plats:
         plat.update()
+    
+    # Draw the score
+    scoretext = font.render(str(player.score), True, BLACK)
+    screen.blit(scoretext, (10, 10))
+    
+    if player.alive == False:
+        endtext = font.render("Game Over", True, BLACK)
+        screen.blit(endtext, (200, 300))
+        restarttext = font.render("Press Button to restart", True, BLACK)
+        screen.blit(restarttext, (200, 350))
     
     
     # Update the display
