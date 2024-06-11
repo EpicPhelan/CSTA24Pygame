@@ -52,14 +52,24 @@ class player(pygame.sprite.Sprite):
         if self.rect.y > 600:
             self.alive = False
             self.rect.y = 600
+            
+        # if player gets close to top, force everything else down with upspeed
+        if self.rect.y < 300:
+            self.upspeed = self.yvel
+            self.rect.y += self.yvel 
+        else:
+            self.upspeed = 0
 
-        col = pygame.sprite.spritecollide(self, Platform.plats, False)
-        if col:
-            for plat in col:
-                if plat.hit == False and self.yvel > 0:
-                    self.yvel = -20
-                    plat.hit = True
-        
+        if self.yvel > 0:
+            col = pygame.sprite.spritecollide(self, Platform.plats, False)
+            if col:
+                for plat in col:
+                    if plat.hit == False:
+                        plat.hit = True
+                        Platform()
+                        if self.yvel > -15:
+                            self.yvel = -15
+    
         floorcol = pygame.sprite.spritecollide(self, Floor.floor, False)
         if floorcol:
             self.yvel = -20
@@ -69,14 +79,15 @@ class player(pygame.sprite.Sprite):
         
 class Platform(pygame.sprite.Sprite):
     plats = pygame.sprite.Group()
-    def __init__(self):
+    def __init__(self, stationary = False):
         super().__init__()
-        self.image = pygame.Surface((200, 50))
+        self.image = pygame.Surface((200, 25))
         self.image.fill(BLUE)
         self.rect = self.image.get_rect()
-        self.rect.x = random.randint(50, 550)
-        self.rect.y = 0
+        self.rect.x = random.choice([25, 125, 225, 325, 425])
+        self.rect.y = -100
         self.hit = False
+        self.stationary = stationary
         Platform.plats.add(self)
         
     def update(self):
@@ -87,8 +98,14 @@ class Platform(pygame.sprite.Sprite):
             else:
                 self.image.fill(DARKGREY)
             
-            # drop the platform
-            self.rect.y += 3
+        
+            # move everything if player is close to top
+            if player.upspeed > 0:
+                self.rect.y += player.upspeed
+                
+            # Move everything by players yvel
+            if player.yvel < 0:
+                self.rect.y += player.yvel * -1
             
             # check if the platform is off the screen
             if self.rect.top > 600:
@@ -140,6 +157,7 @@ thirdplat.rect.y = -200
 thirdplat.rect.x = 200
 # Game Loop
 running = True
+start = pygame.time.get_ticks()
 while running:
     # Event Loop
     for event in pygame.event.get():
@@ -151,9 +169,12 @@ while running:
             if event.key == pygame.K_RIGHT:
                 player.xvel = 8
     
-    # Spawn the platforms
-    if len(Platform.plats) < 5:
-        newplat = Platform()
+    # Spawns platforms every 30 ticks
+    if pygame.time.get_ticks() % 30 == 0:
+        Platform()
+    
+    
+
         
     
     # Fill the background to cover up the old drawings
