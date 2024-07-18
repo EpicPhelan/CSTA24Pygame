@@ -1,3 +1,4 @@
+
 # pygame boiler plate
 import pygame
 import random
@@ -166,6 +167,10 @@ def start_plats():
     thirdplat = Platform()
     thirdplat.rect.y = -200
     thirdplat.rect.x = 200
+    
+
+
+
 # Game Loop
 running = True
 start = pygame.time.get_ticks()
@@ -221,4 +226,3 @@ while running:
     pygame.display.flip()
     # Tick the clock to control FPS
     clock.tick(FPS)
-    
